@@ -84,9 +84,7 @@ void OsgViewerWidget::createOsgViewer()
 
 void OsgViewerWidget::initializeGL()
 {
-
     createOsgViewer();
-
 
     osg::Node* boxNode = createBoxFromOCC();
     if (boxNode)
@@ -124,17 +122,17 @@ void OsgViewerWidget::resizeGL(int width, int height)
 
 void OsgViewerWidget::mousePressEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseButtonPress(event->x(), event->y(), event->button());
+    viewer->getEventQueue()->mouseButtonPress(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
 }
 
 void OsgViewerWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseButtonRelease(event->x(), event->y(), event->button());
+    viewer->getEventQueue()->mouseButtonRelease(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
 }
 
 void OsgViewerWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseMotion(event->x(), event->y());
+    viewer->getEventQueue()->mouseMotion(static_cast<float>(event->x()), static_cast<float>(event->y()));
 }
 
 void OsgViewerWidget::wheelEvent(QWheelEvent* event)

@@ -1,6 +1,5 @@
 #include <QApplication>
 #include <QMainWindow>
-//#include <osgEarth/Initialize>
 #include "OsgViewerWidget.h"
 
 int main(int argc, char** argv) {

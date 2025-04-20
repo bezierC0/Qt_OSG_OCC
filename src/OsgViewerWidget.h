@@ -4,7 +4,9 @@
 #include <osgViewer/Viewer>
 #include <osg/Group>
 
-class OsgViewerWidget : public QOpenGLWidget {
+class OsgViewerWidget 
+    : public QOpenGLWidget 
+{
     Q_OBJECT
 public:
     OsgViewerWidget() = default;
@@ -19,11 +21,11 @@ protected:
     void resizeGL(int width, int height) override;
 
     void OsgViewerWidget::mousePressEvent(QMouseEvent* event) override;
-    void OsgViewerWidget::mouseReleaseEvent(QMouseEvent* event)override;
-    void OsgViewerWidget::mouseMoveEvent(QMouseEvent* event)override;
-    void OsgViewerWidget::wheelEvent(QWheelEvent* event)override;
-    void OsgViewerWidget::keyPressEvent(QKeyEvent* event)override;
-    void OsgViewerWidget::keyReleaseEvent(QKeyEvent* event)override;
+    void OsgViewerWidget::mouseReleaseEvent(QMouseEvent* event) override;
+    void OsgViewerWidget::mouseMoveEvent(QMouseEvent* event) override;
+    void OsgViewerWidget::wheelEvent(QWheelEvent* event) override;
+    void OsgViewerWidget::keyPressEvent(QKeyEvent* event) override;
+    void OsgViewerWidget::keyReleaseEvent(QKeyEvent* event) override;
 
 private:
     osg::ref_ptr<osgViewer::Viewer> viewer; 
