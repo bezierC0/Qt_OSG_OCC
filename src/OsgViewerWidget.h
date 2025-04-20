@@ -13,7 +13,9 @@ public:
     explicit OsgViewerWidget(QWidget* parent = nullptr);
     ~OsgViewerWidget() override;
 
+    osg::Node* createTestShape();
     osg::Node* createBoxFromOCC();
+
 
 protected:
     void initializeGL() override;

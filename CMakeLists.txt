@@ -61,6 +61,12 @@ if (OpenCASCADE_DIR AND EXISTS "${OpenCASCADE_DIR}")
         TKBRep
         TKPrim
         TKMesh
+        TKTopAlgo
+        TKGeomAlgo
+        TKSTEP
+        TKSTEPAttr
+        TKSTEP209
+        TKXSBase
     )
 else()
     message(STATUS "OpenCASCADE_DIR not found")
@@ -69,6 +75,8 @@ endif()
 ### Executable
 add_executable(${PROJECT_NAME}
     src/main.cpp
+    src/OSGConvert.h
+    src/OSGConvert.cpp
     src/OsgViewerWidget.h
     src/OsgViewerWidget.cpp
 )

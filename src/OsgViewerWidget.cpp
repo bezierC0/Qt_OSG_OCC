@@ -1,11 +1,14 @@
 #include "OsgViewerWidget.h"
+#include <QFileDialog>
 #include <osgViewer/api/Win32/GraphicsWindowWin32>
 #include <BRepPrimAPI_MakeBox.hxx>
+#include <STEPControl_Reader.hxx>
 #include <OSGConvert.h>
 #include <osgGA/TrackballManipulator>
 #include <osg/Geode>
 #include <osg/ShapeDrawable>
 #include <osg/Shape>
+
 
 static osg::GraphicsContext* createGraphicsContext(QOpenGLWidget* widget)
 {
@@ -33,26 +36,46 @@ OsgViewerWidget::OsgViewerWidget(QWidget* parent)
 
 OsgViewerWidget::~OsgViewerWidget() = default;
 
+osg::Node* OsgViewerWidget::createTestShape()
+{
+    std::string stepFilePath = "C:\\Workspace\\TestData\\step\\screw.step"; 
+    QString filePath = QFileDialog::getOpenFileName(this, "Open STEP File", "", "STEP Files (*.step *.stp)");
+    if (filePath.isEmpty())
+        return nullptr;
+    stepFilePath = filePath.toStdString();
+
+    STEPControl_Reader reader;
+    IFSelect_ReturnStatus status = reader.ReadFile(stepFilePath.c_str());
+
+    if (status != IFSelect_RetDone)
+    {
+        std::cerr << "Failed to read STEP file: " << stepFilePath << std::endl;
+        return nullptr;
+    }
+
+    bool failTransfer = (reader.TransferRoots() == 0);
+    if (failTransfer)
+    {
+        std::cerr << "Failed to transfer STEP file shapes." << std::endl;
+        return nullptr;
+    }
+
+    TopoDS_Shape shape = reader.OneShape();
+
+    osg::ref_ptr<osg::Node> node = convertOCCShapeToOSG(shape);
+
+    return node.release();
+}
+
 osg::Node* OsgViewerWidget::createBoxFromOCC()
 {
-#if 0
+
     BRepPrimAPI_MakeBox makeBox(100.0, 100.0, 100.0);
     TopoDS_Shape boxShape = makeBox.Shape();
-
 
     osg::ref_ptr<osg::Node> node = convertOCCShapeToOSG(boxShape); 
 
     return node.release();
-#endif
-    osg::ref_ptr<osg::Box> box = new osg::Box(osg::Vec3(0, 0, 0), 100.0f);
-
-    osg::ref_ptr<osg::ShapeDrawable> boxDrawable = new osg::ShapeDrawable(box);
-
-
-    osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-    geode->addDrawable(boxDrawable);
-
-    return geode.release();
 }
 
 void OsgViewerWidget::createOsgViewer()
@@ -86,7 +109,8 @@ void OsgViewerWidget::initializeGL()
 {
     createOsgViewer();
 
-    osg::Node* boxNode = createBoxFromOCC();
+    //osg::Node* boxNode = createBoxFromOCC();
+    osg::Node* boxNode = createTestShape();
     if (boxNode)
     {
         root->addChild(boxNode);
