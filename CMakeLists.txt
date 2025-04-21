@@ -11,6 +11,9 @@ set(CMAKE_AUTORCC ON)
 set(Qt_OSG_OCC_LinkDirectories)   # include path list
 set(Qt_OSG_OCC_LinkLibraries)     # library list
 
+set(OSG_ROOT "" CACHE PATH "Path to OpenSceneGraph installation")
+set(OpenCASCADE_DIR "" CACHE PATH "Path to OpenCASCADE installation")
+
 ### Qt5
 find_package(Qt5 REQUIRED COMPONENTS Widgets OpenGL)
 if(Qt5_FOUND)
@@ -42,7 +45,7 @@ if (OSG_ROOT AND EXISTS "${OSG_ROOT}")
     )
     list(APPEND Qt_OSG_OCC_LinkLibraries ${OSG_LIBS})
 else()
-    message(STATUS "OSG_ROOT not found")
+    message(FATAL_ERROR "OSG_ROOT not found or path does not exist. ")
 endif()
 
 ### OpenCASCADE
@@ -69,7 +72,7 @@ if (OpenCASCADE_DIR AND EXISTS "${OpenCASCADE_DIR}")
         TKXSBase
     )
 else()
-    message(STATUS "OpenCASCADE_DIR not found")
+    message(FATAL_ERROR "OpenCASCADE_DIR not found or path does not exist. ")
 endif()
 
 ### Executable

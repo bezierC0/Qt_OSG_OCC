@@ -26,26 +26,30 @@ static osg::GraphicsContext* createGraphicsContext(QOpenGLWidget* widget)
     return new osgViewer::GraphicsWindowEmbedded(traits.get());
 }
 
+OsgViewerWidget::OsgViewerWidget()
+{
+}
+
 OsgViewerWidget::OsgViewerWidget(QWidget* parent)
     : QOpenGLWidget(parent)
 {
     setMinimumSize(100, 100);
-    viewer = new osgViewer::Viewer;
-    root = new osg::Group;
+    m_viewer = new osgViewer::Viewer;
+    m_root = new osg::Group;
 }
 
 OsgViewerWidget::~OsgViewerWidget() = default;
 
 osg::Node* OsgViewerWidget::createTestShape()
 {
-    std::string stepFilePath = "C:\\Workspace\\TestData\\step\\screw.step"; 
-    QString filePath = QFileDialog::getOpenFileName(this, "Open STEP File", "", "STEP Files (*.step *.stp)");
+    std::string stepFilePath = R"(C:\Workspace\TestData\step\screw.step)";
+    const QString filePath = QFileDialog::getOpenFileName(this, "Open STEP File", "", "STEP Files (*.step *.stp)");
     if (filePath.isEmpty())
         return nullptr;
     stepFilePath = filePath.toStdString();
 
     STEPControl_Reader reader;
-    IFSelect_ReturnStatus status = reader.ReadFile(stepFilePath.c_str());
+    const IFSelect_ReturnStatus status = reader.ReadFile(stepFilePath.c_str());
 
     if (status != IFSelect_RetDone)
     {
@@ -80,16 +84,15 @@ osg::Node* OsgViewerWidget::createBoxFromOCC()
 
 void OsgViewerWidget::createOsgViewer()
 {
-
     osg::GraphicsContext* gc = createGraphicsContext(this);
 
-    osg::Camera* camera = viewer->getCamera();
+    osg::Camera* camera = m_viewer->getCamera();
     camera->setGraphicsContext(gc);
     camera->setViewport(0, 0, width(), height());
     camera->setClearMask(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera->setProjectionMatrixAsPerspective(30.0f, static_cast<double>(width()) / height(), 1.0, 10000.0);
 
-    viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
+    m_viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
 
     osg::ref_ptr<osgGA::TrackballManipulator> manipulator = new osgGA::TrackballManipulator;
 
@@ -98,11 +101,11 @@ void OsgViewerWidget::createOsgViewer()
         osg::Vec3(0, 0, 0),     
         osg::Vec3(0, 0, 1)       
     );
-    viewer->setCameraManipulator(manipulator);
+    m_viewer->setCameraManipulator(manipulator);
 
-    viewer->setSceneData(root);
+    m_viewer->setSceneData(m_root);
 
-    viewer->home();
+    m_viewer->home();
 }
 
 void OsgViewerWidget::initializeGL()
@@ -113,7 +116,7 @@ void OsgViewerWidget::initializeGL()
     osg::Node* boxNode = createTestShape();
     if (boxNode)
     {
-        root->addChild(boxNode);
+        m_root->addChild(boxNode);
     }
 
     osg::ref_ptr<osg::Light> light = new osg::Light;
@@ -124,54 +127,54 @@ void OsgViewerWidget::initializeGL()
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light);
 
-    root->addChild(lightSource);
+    m_root->addChild(lightSource);
 }
 
 void OsgViewerWidget::paintGL()
 {
-    if (viewer.valid())
+    if (m_viewer.valid())
     {
-        viewer->frame();
+        m_viewer->frame();
         update();  
     }
 }
 
 void OsgViewerWidget::resizeGL(int width, int height)
 {
-    if (viewer.valid() && viewer->getCamera())
+    if (m_viewer.valid() && m_viewer->getCamera())
     {
-        viewer->getCamera()->setViewport(0, 0, width, height);
+        m_viewer->getCamera()->setViewport(0, 0, width, height);
     }
 }
 
 void OsgViewerWidget::mousePressEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseButtonPress(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
+    m_viewer->getEventQueue()->mouseButtonPress(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
 }
 
 void OsgViewerWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseButtonRelease(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
+    m_viewer->getEventQueue()->mouseButtonRelease(static_cast<float>(event->x()), static_cast<float>(event->y()), event->button());
 }
 
 void OsgViewerWidget::mouseMoveEvent(QMouseEvent* event)
 {
-    viewer->getEventQueue()->mouseMotion(static_cast<float>(event->x()), static_cast<float>(event->y()));
+    m_viewer->getEventQueue()->mouseMotion(static_cast<float>(event->x()), static_cast<float>(event->y()));
 }
 
 void OsgViewerWidget::wheelEvent(QWheelEvent* event)
 {
-    viewer->getEventQueue()->mouseScroll(
+    m_viewer->getEventQueue()->mouseScroll(
         event->angleDelta().y() > 0 ? osgGA::GUIEventAdapter::SCROLL_UP
         : osgGA::GUIEventAdapter::SCROLL_DOWN);
 }
 
 void OsgViewerWidget::keyPressEvent(QKeyEvent* event)
 {
-    viewer->getEventQueue()->keyPress((osgGA::GUIEventAdapter::KeySymbol)event->key());
+    m_viewer->getEventQueue()->keyPress((osgGA::GUIEventAdapter::KeySymbol)event->key());
 }
 
 void OsgViewerWidget::keyReleaseEvent(QKeyEvent* event)
 {
-    viewer->getEventQueue()->keyRelease((osgGA::GUIEventAdapter::KeySymbol)event->key());
+    m_viewer->getEventQueue()->keyRelease((osgGA::GUIEventAdapter::KeySymbol)event->key());
 }
