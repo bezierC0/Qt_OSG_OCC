@@ -3,11 +3,14 @@
 #include <osgViewer/api/Win32/GraphicsWindowWin32>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <STEPControl_Reader.hxx>
+#include <BRepBndLib.hxx>
 #include <OSGConvert.h>
+#include <BRepExtrema_DistShapeShape.hxx>
 #include <osgGA/TrackballManipulator>
 #include <osg/Geode>
 #include <osg/ShapeDrawable>
 #include <osg/Shape>
+#include <BRepAlgoAPI_Common.hxx>
 
 
 static osg::GraphicsContext* createGraphicsContext(QOpenGLWidget* widget)
@@ -66,9 +69,57 @@ osg::Node* OsgViewerWidget::createTestShape()
 
     TopoDS_Shape shape = reader.OneShape();
 
-    osg::ref_ptr<osg::Node> node = convertOCCShapeToOSG(shape);
+    std::vector<TopoDS_Shape> parts;
+    for ( TopExp_Explorer exp( shape, TopAbs_SOLID ); exp.More(); exp.Next() ) {
+      TopoDS_Shape part = exp.Current();
+      if ( !part.IsNull() )
+        parts.push_back( part );
+    }
 
-    return node.release();
+    if ( parts.size() < 2 ) {
+      std::cerr << "Only one part found. No interference check needed." << std::endl;
+    }
+
+    osg::ref_ptr<osg::Group> rootNode = new osg::Group();
+    osg::ref_ptr<osg::Node> partNode = convertOCCShapeToOSG( shape );
+    rootNode->addChild( partNode );
+
+    /*for ( size_t i = 0; i < parts.size(); ++i ) {
+
+      osg::ref_ptr<osg::Node> partNode = convertOCCShapeToOSG( parts[i] );
+      if ( partNode ) {
+        rootNode->addChild( partNode );
+      }
+    }*/
+
+    for ( size_t i = 0; i < parts.size(); ++i ) {
+      for ( size_t j = i + 1; j < parts.size(); ++j ) {
+
+        Bnd_Box box1, box2;
+        BRepBndLib::Add( parts[i], box1 );
+        BRepBndLib::Add( parts[j], box2 );
+        if ( !box1.IsOut( box2 ) ) {
+
+          BRepExtrema_DistShapeShape dist( parts[i], parts[j] );
+          dist.Perform();
+          if ( dist.IsDone() && dist.Value() < 1e-6 ) 
+          {
+            std::cout << "Part " << i << " and Part " << j << " collide or touch!" << std::endl;
+
+  
+            //BRepAlgoAPI_Common common( parts[i], parts[j] );
+            //common.Build();
+            //if ( !common.Shape().IsNull() ) {
+            //  osg::ref_ptr<osg::Node> collisionNode = convertOCCShapeToOSG( common.Shape(), osg::Vec4( 1.0f, 0.0f, 0.0f, 1.0f ) );
+            //  if ( collisionNode )
+            //    rootNode->addChild( collisionNode );
+            //}
+          }
+        }
+      }
+    }
+
+    return rootNode.release();
 }
 
 osg::Node* OsgViewerWidget::createBoxFromOCC()
