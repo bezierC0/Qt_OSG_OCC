@@ -2,7 +2,7 @@
 
 This is a simple project demonstrating the integration of OpenCASCADE Technology (OCC), OpenSceneGraph (OSG), and Qt. It provides a basic 3D viewer capable of loading and displaying CAD models (specifically STEP files) processed by OpenCASCADE and rendered using OSG within a Qt application.
 
-[English](./README.md) | [简体中文](./README.zh_CN.md) | [日本語](./README.ja_JP.md)
+[English](./README.md) | [简体中文](./README.zh_CN.md) | [日本語](./README.jp_JP.md)
 
 ## Key Features
 
@@ -39,4 +39,5 @@ This project uses CMake for its build system. To compile the project, follow the
     ```bash
     cmake .. -G "Visual Studio 17 2022"
     cmake --build . --config Release
+
 
